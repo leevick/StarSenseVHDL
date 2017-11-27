@@ -40,8 +40,6 @@ component DDR2
       cntrl0_ddr2_cs_n              : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_odt               : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_cke               : out   std_logic_vector(0 downto 0);
-      sys_clk                       : in    std_logic;
-      idly_clk_200                  : in    std_logic;
       sys_reset_in_n                : in    std_logic;
       cntrl0_init_done              : out   std_logic;
       cntrl0_clk_tb                 : out   std_logic;
@@ -55,6 +53,10 @@ component DDR2
       cntrl0_app_af_addr            : in    std_logic_vector(35 downto 0);
       cntrl0_read_data_fifo_out     : out   std_logic_vector(63 downto 0);
       cntrl0_app_wdf_data           : in    std_logic_vector(63 downto 0);
+      clk_0                         : in    std_logic;
+      clk_90                        : in    std_logic;
+      clk_200                       : in    std_logic;
+      dcm_lock                      : in    std_logic;
       cntrl0_ddr2_dqs               : inout std_logic_vector(3 downto 0);
       cntrl0_ddr2_dqs_n             : inout std_logic_vector(3 downto 0);
       cntrl0_ddr2_ck                : out   std_logic_vector(1 downto 0);
@@ -70,14 +72,15 @@ end component;
 		CLKFX_OUT : OUT std_logic;
 		CLKIN_IBUFG_OUT : OUT std_logic;
 		CLK0_OUT : OUT std_logic;
+		CLK90_OUT : OUT std_logic;
 		LOCKED_OUT : OUT std_logic
 		);
 	END COMPONENT;
-    
+
+    signal dcm_lock                      :std_logic;
+    signal clk_90                        :std_logic;
     signal clk_200                       :std_logic;
     signal clk_50                        :std_logic;
-    signal clk_ram_50                    :std_logic;
-    signal clk_ram_200                   :std_logic;
     signal sys_rest                      :std_logic;
     signal cntrl0_init_done              :std_logic;
     signal cntrl0_clk_tb                 :std_logic;
@@ -105,8 +108,6 @@ u_DDR2 :DDR2
       cntrl0_ddr2_cs_n              => cntrl0_ddr2_cs_n,
       cntrl0_ddr2_odt               => cntrl0_ddr2_odt,
       cntrl0_ddr2_cke               => cntrl0_ddr2_cke,
-      sys_clk                       => clk_50,
-      idly_clk_200                  => clk_200,
       sys_reset_in_n                => sys_rest,
       cntrl0_init_done              => cntrl0_init_done,
       cntrl0_clk_tb                 => cntrl0_clk_tb,
@@ -115,6 +116,10 @@ u_DDR2 :DDR2
       cntrl0_af_almost_full         => cntrl0_af_almost_full,
       cntrl0_read_data_valid        => cntrl0_read_data_valid,
       cntrl0_app_wdf_wren           => cntrl0_app_wdf_wren,
+      clk_0                         => clk_50,
+      clk_90                        => clk_90,
+      clk_200                       => clk_200,
+      dcm_lock                      => dcm_lock,
       cntrl0_app_af_wren            => cntrl0_app_af_wren,
       cntrl0_burst_length_div2      => cntrl0_burst_length_div2,
       cntrl0_app_af_addr            => cntrl0_app_af_addr,
@@ -133,7 +138,8 @@ u_DDR2 :DDR2
 		CLKFX_OUT => clk_200,
 		CLKIN_IBUFG_OUT => open,
 		CLK0_OUT => clk_50,
-		LOCKED_OUT => open
+        CLK90_OUT => clk_90,
+		LOCKED_OUT => dcm_lock
 	);
 
 end Behavioral;

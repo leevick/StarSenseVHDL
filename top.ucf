@@ -500,8 +500,8 @@ NET  "cntrl0_ddr2_ck_n[1]"                       LOC = "U31" ;          #Bank 11
 #IDELAYCTRL Location Constraints
 ################################################################################
 
-#INST "*/idelay_ctrl0/IDELAYCTRL_INST[0].u_idelayctrl" LOC=IDELAYCTRL_X0Y1;
-#INST "*/idelay_ctrl0/IDELAYCTRL_INST[1].u_idelayctrl" LOC=IDELAYCTRL_X0Y0;
+INST "*/idelay_ctrl0/IDELAYCTRL_INST[0].u_idelayctrl" LOC=IDELAYCTRL_X0Y1;
+INST "*/idelay_ctrl0/IDELAYCTRL_INST[1].u_idelayctrl" LOC=IDELAYCTRL_X0Y0;
 
 ################################################################################
 # TEST
