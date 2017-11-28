@@ -99,8 +99,8 @@ end component;
     signal cntrl0_ddr2_cs_n_r            :std_logic_vector(0 downto 0);
     signal cntrl0_ddr2_odt_r            :std_logic_vector(0 downto 0);
 
-    signal cntrl0_ddr2_cs_n_copy_r            :std_logic;
-    signal cntrl0_ddr2_odt_copy_r            :std_logic;
+    signal cntrl0_ddr2_cs_n_cpy_r            :std_logic;
+    signal cntrl0_ddr2_odt_cpy_r            :std_logic;
 
     signal rst_cnt                       :integer range 0 to 100:=100;
     signal data_cnt                      :integer range 0 to 65535:=0;
@@ -121,6 +121,8 @@ begin
     cntrl0_ddr2_odt <= cntrl0_ddr2_odt_r;
     cntrl0_ddr2_cs_n <= cntrl0_ddr2_cs_n_r;
     cntrl0_ddr2_dm <= "1111";
+    cntrl0_ddr2_cs_n_cpy <= '0';
+    cntrl0_ddr2_odt_cpy <='0';
 
 u_DDR2 :DDR2
        port map (
@@ -178,18 +180,6 @@ u_DDR2 :DDR2
             end if;
             end if;
         elsif rising_edge(clk_50) then
-
-            IF(cntrl0_ddr2_cs_n_r(0)='1') then
-            cntrl0_ddr2_cs_n_cpy <= '1';
-            else
-            cntrl0_ddr2_cs_n_cpy <= '0';
-            end if;
-
-            IF(cntrl0_ddr2_odt_r(0)='1') then
-            cntrl0_ddr2_odt_cpy <= '1';
-            else
-            cntrl0_ddr2_odt_cpy <= '0';
-            end if;
             case work_status is
                 when idle =>
                     if(cntrl0_init_done='1') then
