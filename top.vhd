@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use ieee.std_logic_arith.all;
 
 entity top is
     port(
@@ -81,7 +82,7 @@ end component;
     signal clk_90                        :std_logic;
     signal clk_200                       :std_logic;
     signal clk_50                        :std_logic;
-    signal sys_rest                      :std_logic;
+    signal sys_rest                      :std_logic:='1';
     signal cntrl0_init_done              :std_logic;
     signal cntrl0_clk_tb                 :std_logic;
     signal cntrl0_reset_tb               :std_logic;
@@ -94,8 +95,32 @@ end component;
     signal cntrl0_app_af_addr            :std_logic_vector(35 downto 0);
     signal cntrl0_read_data_fifo_out     :std_logic_vector(63 downto 0);
     signal cntrl0_app_wdf_data           :std_logic_vector(63 downto 0);
-    
+
+    signal cntrl0_ddr2_cs_n_r            :std_logic_vector(0 downto 0);
+    signal cntrl0_ddr2_odt_r            :std_logic_vector(0 downto 0);
+
+    signal cntrl0_ddr2_cs_n_copy_r            :std_logic;
+    signal cntrl0_ddr2_odt_copy_r            :std_logic;
+
+    signal rst_cnt                       :integer range 0 to 100:=100;
+    signal data_cnt                      :integer range 0 to 65535:=0;
+    signal data_cnt_2                    :integer range 0 to 65535:=1;   
+    signal addr_cnt                      :integer range 0 to 65535:=0;
+
+    type status is (idle,rest,stp,rd,wr);
+    signal work_status:status:=idle;
+    -- attribute KEEP : string;
+    -- attribute KEEP of cntrl0_ddr2_cs_n_r:signal is "TRUE";
+    -- attribute KEEP of cntrl0_ddr2_odt_r:signal is "TRUE";
+    -- attribute KEEP of cntrl0_ddr2_cs_n:signal is "TRUE";
+    -- attribute KEEP of cntrl0_ddr2_odt:signal is "TRUE";
+    -- attribute KEEP of cntrl0_ddr2_cs_n_cpy:signal is "TRUE";
+    -- attribute KEEP of cntrl0_ddr2_odt_cpy:signal is "TRUE";
+
 begin
+    cntrl0_ddr2_odt <= cntrl0_ddr2_odt_r;
+    cntrl0_ddr2_cs_n <= cntrl0_ddr2_cs_n_r;
+    cntrl0_ddr2_dm <= "1111";
 
 u_DDR2 :DDR2
        port map (
@@ -105,8 +130,8 @@ u_DDR2 :DDR2
       cntrl0_ddr2_ras_n             => cntrl0_ddr2_ras_n,
       cntrl0_ddr2_cas_n             => cntrl0_ddr2_cas_n,
       cntrl0_ddr2_we_n              => cntrl0_ddr2_we_n,
-      cntrl0_ddr2_cs_n              => cntrl0_ddr2_cs_n,
-      cntrl0_ddr2_odt               => cntrl0_ddr2_odt,
+      cntrl0_ddr2_cs_n              => cntrl0_ddr2_cs_n_r,
+      cntrl0_ddr2_odt               => cntrl0_ddr2_odt_r,
       cntrl0_ddr2_cke               => cntrl0_ddr2_cke,
       sys_reset_in_n                => sys_rest,
       cntrl0_init_done              => cntrl0_init_done,
@@ -141,6 +166,68 @@ u_DDR2 :DDR2
         CLK90_OUT => clk_90,
 		LOCKED_OUT => dcm_lock
 	);
+
+    main:process(clk_50) begin
+        if sys_rest='1' then
+            if(rising_edge(clk_50)) then
+            if(rst_cnt>0) then
+                rst_cnt <= rst_cnt -1;
+            else
+                sys_rest <= '0';
+                work_status <= idle;
+            end if;
+            end if;
+        elsif rising_edge(clk_50) then
+
+            IF(cntrl0_ddr2_cs_n_r(0)='1') then
+            cntrl0_ddr2_cs_n_cpy <= '1';
+            else
+            cntrl0_ddr2_cs_n_cpy <= '0';
+            end if;
+
+            IF(cntrl0_ddr2_odt_r(0)='1') then
+            cntrl0_ddr2_odt_cpy <= '1';
+            else
+            cntrl0_ddr2_odt_cpy <= '0';
+            end if;
+            case work_status is
+                when idle =>
+                    if(cntrl0_init_done='1') then
+                        work_status <=wr;
+                        cntrl0_app_af_wren <= '1';
+                        cntrl0_app_wdf_wren <= '1';
+                    end if;
+                when wr =>
+                    if(addr_cnt<65535) then
+                        cntrl0_app_af_addr <= conv_std_logic_vector(addr_cnt,36);
+                        cntrl0_app_wdf_data(63 downto 32) <= conv_std_logic_vector(data_cnt_2,32);
+                        cntrl0_app_wdf_data(31 downto 0) <= conv_std_logic_vector(data_cnt,32);
+                        data_cnt <= data_cnt +1;
+                        data_cnt_2 <=data_cnt_2+1;
+                        addr_cnt <= addr_cnt+2;
+                    else
+                        cntrl0_app_af_wren <='0';
+                        cntrl0_app_wdf_wren <='0';
+                        work_status <= rd;
+                    end if;
+                when rd =>
+                    if(addr_cnt>0 and cntrl0_read_data_valid='1') then
+                        cntrl0_app_af_addr <= conv_std_logic_vector(addr_cnt,36);
+                        addr_cnt <=addr_cnt -1;
+                    else
+                        work_status <=stp;
+                    end if;
+
+                when stp =>
+
+                when others =>
+                    work_status <= stp;
+
+            end case;
+        else
+        
+        end if;
+    end process;
 
 end Behavioral;
 
