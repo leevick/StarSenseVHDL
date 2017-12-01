@@ -110,6 +110,7 @@ entity DDR2_ddr2_controller_0 is
     ctrl_ddr2_cs_l         : out std_logic_vector((CS_WIDTH-1) downto 0);
     ctrl_ddr2_cke          : out std_logic_vector((CKE_WIDTH-1) downto 0);
     ctrl_ddr2_odt          : out std_logic_vector((ODT_WIDTH-1) downto 0);
+    ctrl_ddr2_odt_cpy          : out std_logic_vector((ODT_WIDTH-1) downto 0);
     init_done_r            : out std_logic;
 
     -- Debug Signals
@@ -126,7 +127,8 @@ entity DDR2_ddr2_controller_0 is
     attribute IOB of ctrl_ddr2_we_l    : signal is "FORCE";
     attribute IOB of ctrl_ddr2_cs_l    : signal is "FORCE";
     attribute IOB of ctrl_ddr2_cke     : signal is "FORCE";
-    attribute IOB of ctrl_ddr2_odt     : signal is "FORCE";
+    attribute IOB of ctrl_ddr2_odt     : signal is "TRUE";
+    attribute IOB of ctrl_ddr2_odt_cpy     : signal is "TRUE";
 
 end entity ;
 
@@ -358,6 +360,7 @@ architecture arc_controller of DDR2_ddr2_controller_0 is
 
   signal command_address          : std_logic_vector(2 downto 0);
   signal ctrl_odt                 : std_logic_vector((ODT_WIDTH-1) downto 0);
+  signal ctrl_odt_cpy             : std_logic_vector((ODT_WIDTH-1) downto 0);
   signal cs_width0                : std_logic_vector(1 downto 0);
   signal cs_width1                : std_logic_vector(2 downto 0);
 
@@ -2350,6 +2353,7 @@ begin
     if (clk0='1' and clk0'event) then
       if (rst_r1 = '1') then
             ctrl_odt  <= (others => '0');
+            ctrl_odt_cpy  <= (others => '0');
       else
         case CS_WIDTH is
           when 1 =>
@@ -2358,8 +2362,11 @@ begin
                 and (odt_en_single = '1')) then
                 ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                              CS_H1((CS_WIDTH-1) downto 0));
+                ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                             CS_H1((CS_WIDTH-1) downto 0));
             else
                 ctrl_odt <= (others=>'0');
+                ctrl_odt_cpy <= (others=>'0');
             end if;
 
           when 2 =>
@@ -2376,11 +2383,16 @@ begin
               if (ddr2_cs_r_odt_r2 = CS_H2((CS_WIDTH-1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H2((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H2((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 =  CS_H1((CS_WIDTH-1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H1((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H1((CS_WIDTH-1) downto 0));
               else
                   ctrl_odt <= (others=>'0');
+                  ctrl_odt_cpy <= (others=>'0');
               end if;
             elsif (DUAL_RANK = 1) then
               -- One Dual Rank DIMM is poupulated in single slot - Rank1 is
@@ -2392,12 +2404,17 @@ begin
                   and (odt_en_single = '1')) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H1((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H1((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 =  CS_H1((CS_WIDTH-1) downto 0)
                      and (odt_en_single = '1')) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H1((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H1((CS_WIDTH-1) downto 0));
               else
                   ctrl_odt <= (others=>'0');
+                  ctrl_odt_cpy <= (others=>'0');
               end if;
             end if;
 
@@ -2416,14 +2433,21 @@ begin
               if (ddr2_cs_r_odt_r2 =  CS_H6((CS_WIDTH-1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H4((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H4((CS_WIDTH-1) downto 0));
               elsif(ddr2_cs_r_odt_r2 =  CS_H5((CS_WIDTH-1) downto 0))  then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H4((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H4((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 = CS_H3((CS_WIDTH - 1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H2((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H2((CS_WIDTH-1) downto 0));
               else
                   ctrl_odt <= (others=>'0');
+                  ctrl_odt_cpy <= (others=>'0');
               end if;
 --            elsif (DUAL_RANK = 1) then
               -- One Dual Rank DIMM is poupulated in slot1 and
@@ -2468,17 +2492,26 @@ begin
 			  if (ddr2_cs_r_odt_r2 =  CS_HE((CS_WIDTH - 1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H8((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H8((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 = CS_HD((CS_WIDTH - 1) downto 0)) then
                  ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H8((CS_WIDTH-1) downto 0));
+                 ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H8((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 = CS_HB((CS_WIDTH - 1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H8((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H8((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 = CS_H7((CS_WIDTH - 1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H4((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H4((CS_WIDTH-1) downto 0));
               else
                   ctrl_odt <= (others=>'0');
+                  ctrl_odt_cpy <= (others=>'0');
               end if;
             elsif (DUAL_RANK = 1) then
               -- Two Dual Rank DIMMs are poupulated in slot1 and slot2 -
@@ -2493,21 +2526,32 @@ begin
               if (ddr2_cs_r_odt_r2 =  CS_HE((CS_WIDTH - 1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H4((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H4((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 = CS_HD((CS_WIDTH - 1) downto 0)) then
                  ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H4((CS_WIDTH-1) downto 0));
+                 ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H4((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 = CS_HB((CS_WIDTH - 1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H1((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H1((CS_WIDTH-1) downto 0));
               elsif (ddr2_cs_r_odt_r2 = CS_H7((CS_WIDTH - 1) downto 0)) then
                   ctrl_odt <= (odt_en((CS_WIDTH-1) downto 0) and
                                CS_H1((CS_WIDTH-1) downto 0));
+                  ctrl_odt_cpy <= (odt_en((CS_WIDTH-1) downto 0) and
+                               CS_H1((CS_WIDTH-1) downto 0));
               else
                   ctrl_odt <= (others=>'0');
+                  ctrl_odt_cpy <= (others=>'0');
               end if;
             end if;
 
-          when others => ctrl_odt <= ctrl_odt;
+          when others => 
+            ctrl_odt <= ctrl_odt;
+            ctrl_odt_cpy <= ctrl_odt_cpy;
 
         end case;
       end if;
@@ -2520,6 +2564,7 @@ begin
   ctrl_ddr2_cas_l   <= ddr2_cas_r3;
   ctrl_ddr2_we_l    <= ddr2_we_r3;
   ctrl_ddr2_odt     <= ctrl_odt;
+  ctrl_ddr2_odt_cpy     <= ctrl_odt_cpy;
   ctrl_ddr2_cs_l    <= ddr2_cs_r_out;
 
   ctrl_dqs_rst      <= ctrl_dqs_rst_r1;

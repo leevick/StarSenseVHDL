@@ -18,7 +18,7 @@ entity top is
         cntrl0_ddr2_cs_n    :out std_logic_vector(0 downto 0);
         cntrl0_ddr2_cs_n_cpy :out std_logic;
         cntrl0_ddr2_odt     :out std_logic_vector(0 downto 0);
-        cntrl0_ddr2_odt_cpy :out std_logic;
+        cntrl0_ddr2_odt_cpy :out std_logic_vector(0 downto 0);
         cntrl0_ddr2_cke     :out std_logic_vector(0 downto 0);
         cntrl0_ddr2_dm      :out std_logic_vector(3 downto 0);
         cntrl0_ddr2_dqs     :inout std_logic_vector(3 downto 0);
@@ -40,7 +40,9 @@ component DDR2
       cntrl0_ddr2_we_n              : out   std_logic;
       cntrl0_ddr2_cs_n              : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_odt               : out   std_logic_vector(0 downto 0);
+      cntrl0_ddr2_odt_cpy           : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_cke               : out   std_logic_vector(0 downto 0);
+      cntrl0_ddr2_dm                : out   std_logic_vector(3 downto 0);
       sys_reset_in_n                : in    std_logic;
       cntrl0_init_done              : out   std_logic;
       cntrl0_clk_tb                 : out   std_logic;
@@ -96,12 +98,6 @@ end component;
     signal cntrl0_read_data_fifo_out     :std_logic_vector(63 downto 0);
     signal cntrl0_app_wdf_data           :std_logic_vector(63 downto 0);
 
-    signal cntrl0_ddr2_cs_n_r            :std_logic_vector(0 downto 0);
-    signal cntrl0_ddr2_odt_r            :std_logic_vector(0 downto 0);
-
-    signal cntrl0_ddr2_cs_n_cpy_r            :std_logic;
-    signal cntrl0_ddr2_odt_cpy_r            :std_logic;
-
     signal rst_cnt                       :integer range 0 to 100:=100;
     signal data_cnt                      :integer range 0 to 65535:=0;
     signal data_cnt_2                    :integer range 0 to 65535:=1;   
@@ -109,20 +105,10 @@ end component;
 
     type status is (idle,rest,stp,rd,wr);
     signal work_status:status:=idle;
-    -- attribute KEEP : string;
-    -- attribute KEEP of cntrl0_ddr2_cs_n_r:signal is "TRUE";
-    -- attribute KEEP of cntrl0_ddr2_odt_r:signal is "TRUE";
-    -- attribute KEEP of cntrl0_ddr2_cs_n:signal is "TRUE";
-    -- attribute KEEP of cntrl0_ddr2_odt:signal is "TRUE";
-    -- attribute KEEP of cntrl0_ddr2_cs_n_cpy:signal is "TRUE";
-    -- attribute KEEP of cntrl0_ddr2_odt_cpy:signal is "TRUE";
+
 
 begin
-    cntrl0_ddr2_odt <= cntrl0_ddr2_odt_r;
-    cntrl0_ddr2_cs_n <= cntrl0_ddr2_cs_n_r;
-    cntrl0_ddr2_dm <= "1111";
     cntrl0_ddr2_cs_n_cpy <= '0';
-    cntrl0_ddr2_odt_cpy <='0';
 
 u_DDR2 :DDR2
        port map (
@@ -132,9 +118,11 @@ u_DDR2 :DDR2
       cntrl0_ddr2_ras_n             => cntrl0_ddr2_ras_n,
       cntrl0_ddr2_cas_n             => cntrl0_ddr2_cas_n,
       cntrl0_ddr2_we_n              => cntrl0_ddr2_we_n,
-      cntrl0_ddr2_cs_n              => cntrl0_ddr2_cs_n_r,
-      cntrl0_ddr2_odt               => cntrl0_ddr2_odt_r,
+      cntrl0_ddr2_cs_n              => cntrl0_ddr2_cs_n,
+      cntrl0_ddr2_odt               => cntrl0_ddr2_odt,
+      cntrl0_ddr2_odt_cpy               => cntrl0_ddr2_odt_cpy,
       cntrl0_ddr2_cke               => cntrl0_ddr2_cke,
+      cntrl0_ddr2_dm                => cntrl0_ddr2_dm,
       sys_reset_in_n                => sys_rest,
       cntrl0_init_done              => cntrl0_init_done,
       cntrl0_clk_tb                 => cntrl0_clk_tb,
