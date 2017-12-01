@@ -108,6 +108,7 @@ entity DDR2_ddr2_controller_0 is
     ctrl_ddr2_cas_l        : out std_logic;
     ctrl_ddr2_we_l         : out std_logic;
     ctrl_ddr2_cs_l         : out std_logic_vector((CS_WIDTH-1) downto 0);
+    ctrl_ddr2_cs_l_cpy         : out std_logic_vector((CS_WIDTH-1) downto 0);
     ctrl_ddr2_cke          : out std_logic_vector((CKE_WIDTH-1) downto 0);
     ctrl_ddr2_odt          : out std_logic_vector((ODT_WIDTH-1) downto 0);
     ctrl_ddr2_odt_cpy          : out std_logic_vector((ODT_WIDTH-1) downto 0);
@@ -125,7 +126,8 @@ entity DDR2_ddr2_controller_0 is
     attribute IOB of ctrl_ddr2_ras_l   : signal is "FORCE";
     attribute IOB of ctrl_ddr2_cas_l   : signal is "FORCE";
     attribute IOB of ctrl_ddr2_we_l    : signal is "FORCE";
-    attribute IOB of ctrl_ddr2_cs_l    : signal is "FORCE";
+    attribute IOB of ctrl_ddr2_cs_l    : signal is "TRUE";
+    attribute IOB of ctrl_ddr2_cs_l_cpy    : signal is "TRUE";
     attribute IOB of ctrl_ddr2_cke     : signal is "FORCE";
     attribute IOB of ctrl_ddr2_odt     : signal is "TRUE";
     attribute IOB of ctrl_ddr2_odt_cpy     : signal is "TRUE";
@@ -375,6 +377,7 @@ architecture arc_controller of DDR2_ddr2_controller_0 is
   signal ctrl_rden_r1             : std_logic;
 
   signal ddr2_cs_r_out            : std_logic_vector((CS_WIDTH-1) downto 0);
+  signal ddr2_cs_r_out_cpy            : std_logic_vector((CS_WIDTH-1) downto 0);
   signal ddr2_cs_r_odt            : std_logic_vector((CS_WIDTH-1) downto 0);
 
   signal count6                   : std_logic_vector(6 downto 0);
@@ -2242,9 +2245,11 @@ begin
     if (clk0 = '1' and clk0'event) then
       if (rst_r1 = '1') then
         ddr2_cs_r_out <= (others => '1');
+        ddr2_cs_r_out_cpy <= (others => '1');
         ddr2_cs_r_odt <= (others => '1');
       else
         ddr2_cs_r_out <= ddr2_cs_r1;
+        ddr2_cs_r_out_cpy <= ddr2_cs_r1;
         ddr2_cs_r_odt <= ddr2_cs_r1;
       end if;
     end if;
@@ -2566,6 +2571,7 @@ begin
   ctrl_ddr2_odt     <= ctrl_odt;
   ctrl_ddr2_odt_cpy     <= ctrl_odt_cpy;
   ctrl_ddr2_cs_l    <= ddr2_cs_r_out;
+  ctrl_ddr2_cs_l_cpy    <= ddr2_cs_r_out_cpy;
 
   ctrl_dqs_rst      <= ctrl_dqs_rst_r1;
   ctrl_dqs_en       <= ctrl_dqs_en_r1;

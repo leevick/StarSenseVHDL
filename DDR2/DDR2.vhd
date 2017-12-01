@@ -69,6 +69,7 @@ entity DDR2 is
       cntrl0_ddr2_cas_n             : out   std_logic;
       cntrl0_ddr2_we_n              : out   std_logic;
       cntrl0_ddr2_cs_n              : out   std_logic_vector(0 downto 0);
+      cntrl0_ddr2_cs_n_cpy              : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_odt               : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_odt_cpy               : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_cke               : out   std_logic_vector(0 downto 0);
@@ -114,6 +115,7 @@ component DDR2_top_0
       ddr2_cas_n            : out   std_logic;
       ddr2_we_n             : out   std_logic;
       ddr2_cs_n             : out   std_logic_vector(0 downto 0);
+      ddr2_cs_n_cpy             : out   std_logic_vector(0 downto 0);
       ddr2_odt              : out   std_logic_vector(0 downto 0);
       ddr2_odt_cpy              : out   std_logic_vector(0 downto 0);
       ddr2_cke              : out   std_logic_vector(0 downto 0);
@@ -228,6 +230,7 @@ top_00 :    DDR2_top_0
       ddr2_cas_n            => cntrl0_ddr2_cas_n,
       ddr2_we_n             => cntrl0_ddr2_we_n,
       ddr2_cs_n             => cntrl0_ddr2_cs_n,
+      ddr2_cs_n_cpy             => cntrl0_ddr2_cs_n_cpy,
       ddr2_odt              => cntrl0_ddr2_odt,
       ddr2_odt_cpy              => cntrl0_ddr2_odt_cpy,
       ddr2_cke              => cntrl0_ddr2_cke,

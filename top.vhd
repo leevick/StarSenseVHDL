@@ -16,7 +16,7 @@ entity top is
         cntrl0_ddr2_cas_n   :out std_logic;
         cntrl0_ddr2_we_n    :out std_logic;
         cntrl0_ddr2_cs_n    :out std_logic_vector(0 downto 0);
-        cntrl0_ddr2_cs_n_cpy :out std_logic;
+        cntrl0_ddr2_cs_n_cpy :out std_logic_vector(0 downto 0);
         cntrl0_ddr2_odt     :out std_logic_vector(0 downto 0);
         cntrl0_ddr2_odt_cpy :out std_logic_vector(0 downto 0);
         cntrl0_ddr2_cke     :out std_logic_vector(0 downto 0);
@@ -39,6 +39,7 @@ component DDR2
       cntrl0_ddr2_cas_n             : out   std_logic;
       cntrl0_ddr2_we_n              : out   std_logic;
       cntrl0_ddr2_cs_n              : out   std_logic_vector(0 downto 0);
+      cntrl0_ddr2_cs_n_cpy              : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_odt               : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_odt_cpy           : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_cke               : out   std_logic_vector(0 downto 0);
@@ -108,7 +109,6 @@ end component;
 
 
 begin
-    cntrl0_ddr2_cs_n_cpy <= '0';
 
 u_DDR2 :DDR2
        port map (
@@ -119,6 +119,7 @@ u_DDR2 :DDR2
       cntrl0_ddr2_cas_n             => cntrl0_ddr2_cas_n,
       cntrl0_ddr2_we_n              => cntrl0_ddr2_we_n,
       cntrl0_ddr2_cs_n              => cntrl0_ddr2_cs_n,
+      cntrl0_ddr2_cs_n_cpy              => cntrl0_ddr2_cs_n_cpy,
       cntrl0_ddr2_odt               => cntrl0_ddr2_odt,
       cntrl0_ddr2_odt_cpy               => cntrl0_ddr2_odt_cpy,
       cntrl0_ddr2_cke               => cntrl0_ddr2_cke,

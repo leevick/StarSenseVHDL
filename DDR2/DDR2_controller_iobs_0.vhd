@@ -70,6 +70,7 @@ entity DDR2_controller_iobs_0 is
     ctrl_ddr2_cas_l   : in  std_logic;
     ctrl_ddr2_we_l    : in  std_logic;
     ctrl_ddr2_cs_l    : in  std_logic_vector(CS_WIDTH-1 downto 0);
+    ctrl_ddr2_cs_l_cpy    : in  std_logic_vector(CS_WIDTH-1 downto 0);
     ctrl_ddr2_cke     : in  std_logic_vector(CKE_WIDTH-1 downto 0);
     ctrl_ddr2_odt     : in  std_logic_vector(ODT_WIDTH-1 downto 0);
     ctrl_ddr2_odt_cpy     : in  std_logic_vector(ODT_WIDTH-1 downto 0);
@@ -82,7 +83,8 @@ entity DDR2_controller_iobs_0 is
     ddr_odt           : out std_logic_vector(ODT_WIDTH-1 downto 0);
     ddr_odt_cpy           : out std_logic_vector(ODT_WIDTH-1 downto 0);
     ddr_cke           : out std_logic_vector(CKE_WIDTH-1 downto 0);
-    ddr_cs_l          : out std_logic_vector(CS_WIDTH-1 downto 0)
+    ddr_cs_l          : out std_logic_vector(CS_WIDTH-1 downto 0);
+    ddr_cs_l_cpy          : out std_logic_vector(CS_WIDTH-1 downto 0)
     );
 end entity;
 
@@ -120,6 +122,14 @@ begin
       port map (
         I => ctrl_ddr2_cs_l(cs_i),
         O => ddr_cs_l(cs_i)
+        );
+  end generate;
+  gen_cs_n_cpy: for cs_i in 0 to CS_WIDTH-1 generate
+  begin
+    u_obuf_cs_n_cpy : OBUF
+      port map (
+        I => ctrl_ddr2_cs_l_cpy(cs_i),
+        O => ddr_cs_l_cpy(cs_i)
         );
   end generate;
 

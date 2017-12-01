@@ -81,6 +81,7 @@ entity DDR2_top_0 is
     ddr2_odt_cpy           : out   std_logic_vector(ODT_WIDTH-1 downto 0);
     ddr2_cke           : out   std_logic_vector(CKE_WIDTH-1 downto 0);
     ddr2_cs_n          : out   std_logic_vector(CS_WIDTH-1 downto 0);
+    ddr2_cs_n_cpy          : out   std_logic_vector(CS_WIDTH-1 downto 0);
     ddr2_dq            : inout std_logic_vector(DATA_WIDTH-1 downto 0);
     ddr2_dqs           : inout std_logic_vector(DATA_STROBE_WIDTH-1 downto 0);
     ddr2_dqs_n         : inout std_logic_vector(DATA_STROBE_WIDTH-1 downto 0);
@@ -207,6 +208,7 @@ architecture arc_top of DDR2_top_0 is
       ddr_cas_l         : out   std_logic;
       ddr_we_l          : out   std_logic;
       ddr_cs_l          : out   std_logic_vector(CS_WIDTH-1 downto 0);
+      ddr_cs_l_cpy          : out   std_logic_vector(CS_WIDTH-1 downto 0);
       ddr_cke           : out   std_logic_vector(CKE_WIDTH-1 downto 0);
       ddr_odt           : out   std_logic_vector(ODT_WIDTH-1 downto 0);
       ddr_odt_cpy           : out   std_logic_vector(ODT_WIDTH-1 downto 0);
@@ -217,6 +219,7 @@ architecture arc_top of DDR2_top_0 is
       ctrl_ddr2_odt_cpy     : in    std_logic_vector(ODT_WIDTH-1 downto 0);
       ctrl_ddr2_cke     : in    std_logic_vector(CKE_WIDTH-1 downto 0);
       ctrl_ddr2_cs_l    : in    std_logic_vector(CS_WIDTH-1 downto 0);
+      ctrl_ddr2_cs_l_cpy    : in    std_logic_vector(CS_WIDTH-1 downto 0);
       ctrl_ddr2_ba      : in    std_logic_vector(BANK_ADDRESS-1 downto 0);
       ctrl_ddr2_address : in    std_logic_vector(ROW_ADDRESS-1 downto 0)
       );
@@ -286,6 +289,7 @@ architecture arc_top of DDR2_top_0 is
       ctrl_ddr2_cas_l      : out std_logic;
       ctrl_ddr2_we_l       : out std_logic;
       ctrl_ddr2_cs_l       : out std_logic_vector((CS_WIDTH-1) downto 0);
+      ctrl_ddr2_cs_l_cpy       : out std_logic_vector((CS_WIDTH-1) downto 0);
       ctrl_ddr2_cke        : out std_logic_vector((CKE_WIDTH-1) downto 0);
       ctrl_ddr2_odt        : out std_logic_vector((ODT_WIDTH-1) downto 0);
       ctrl_ddr2_odt_cpy        : out std_logic_vector((ODT_WIDTH-1) downto 0);
@@ -333,6 +337,7 @@ architecture arc_top of DDR2_top_0 is
   signal ctrl_ddr2_cas_l   : std_logic;
   signal ctrl_ddr2_we_l    : std_logic;
   signal ctrl_ddr2_cs_l    : std_logic_vector(CS_WIDTH-1 downto 0);
+  signal ctrl_ddr2_cs_l_cpy    : std_logic_vector(CS_WIDTH-1 downto 0);
   signal ctrl_ddr2_cke     : std_logic_vector(CKE_WIDTH-1 downto 0);
   signal ctrl_ddr2_odt     : std_logic_vector(ODT_WIDTH-1 downto 0);
   signal ctrl_ddr2_odt_cpy     : std_logic_vector(ODT_WIDTH-1 downto 0);
@@ -426,6 +431,7 @@ begin
       ctrl_ddr2_cas_l   => ctrl_ddr2_cas_l,
       ctrl_ddr2_we_l    => ctrl_ddr2_we_l,
       ctrl_ddr2_cs_l    => ctrl_ddr2_cs_l,
+      ctrl_ddr2_cs_l_cpy    => ctrl_ddr2_cs_l_cpy,
       ctrl_ddr2_cke     => ctrl_ddr2_cke,
       ctrl_ddr2_odt     => ctrl_ddr2_odt,
       ctrl_ddr2_odt_cpy     => ctrl_ddr2_odt_cpy,
@@ -437,7 +443,8 @@ begin
       ddr_cke           => ddr2_cke,
       ddr_odt           => ddr2_odt,
       ddr_odt_cpy           => ddr2_odt_cpy,
-      ddr_cs_l          => ddr2_cs_n
+      ddr_cs_l          => ddr2_cs_n,
+      ddr_cs_l_cpy          => ddr2_cs_n_cpy
       );
 
   user_interface_00 :  DDR2_user_interface_0
@@ -499,6 +506,7 @@ begin
       ctrl_ddr2_cas_l      => ctrl_ddr2_cas_l,
       ctrl_ddr2_we_l       => ctrl_ddr2_we_l,
       ctrl_ddr2_cs_l       => ctrl_ddr2_cs_l,
+      ctrl_ddr2_cs_l_cpy       => ctrl_ddr2_cs_l_cpy,
       ctrl_ddr2_cke        => ctrl_ddr2_cke,
       ctrl_ddr2_odt        => ctrl_ddr2_odt,
       ctrl_ddr2_odt_cpy        => ctrl_ddr2_odt_cpy,

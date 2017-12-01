@@ -98,6 +98,7 @@ entity DDR2_iobs_0 is
     ddr_cas_l         : out   std_logic;
     ddr_we_l          : out   std_logic;
     ddr_cs_l          : out   std_logic_vector(CS_WIDTH-1 downto 0);
+    ddr_cs_l_cpy          : out   std_logic_vector(CS_WIDTH-1 downto 0);
     ddr_cke           : out   std_logic_vector(CKE_WIDTH-1 downto 0);
     ddr_odt           : out   std_logic_vector(ODT_WIDTH-1 downto 0);
     ddr_odt_cpy           : out   std_logic_vector(ODT_WIDTH-1 downto 0);
@@ -108,6 +109,7 @@ entity DDR2_iobs_0 is
     ctrl_ddr2_odt_cpy     : in    std_logic_vector(ODT_WIDTH-1 downto 0);
     ctrl_ddr2_cke     : in    std_logic_vector(CKE_WIDTH-1 downto 0);
     ctrl_ddr2_cs_l    : in    std_logic_vector(CS_WIDTH-1 downto 0);
+    ctrl_ddr2_cs_l_cpy    : in    std_logic_vector(CS_WIDTH-1 downto 0);
     ctrl_ddr2_ba      : in    std_logic_vector(BANK_ADDRESS-1 downto 0);
     ctrl_ddr2_address : in    std_logic_vector(ROW_ADDRESS-1 downto 0)
     );
@@ -159,6 +161,7 @@ architecture  arc_iobs of DDR2_iobs_0 is
       ctrl_ddr2_cas_l   : in  std_logic;
       ctrl_ddr2_we_l    : in  std_logic;
       ctrl_ddr2_cs_l    : in  std_logic_vector(CS_WIDTH-1 downto 0);
+      ctrl_ddr2_cs_l_cpy    : in  std_logic_vector(CS_WIDTH-1 downto 0);
       ctrl_ddr2_cke     : in  std_logic_vector(CKE_WIDTH-1 downto 0);
       ctrl_ddr2_odt     : in  std_logic_vector(ODT_WIDTH-1 downto 0);
       ctrl_ddr2_odt_cpy     : in  std_logic_vector(ODT_WIDTH-1 downto 0);
@@ -171,7 +174,8 @@ architecture  arc_iobs of DDR2_iobs_0 is
       ddr_odt           : out std_logic_vector(ODT_WIDTH-1 downto 0);
       ddr_odt_cpy           : out std_logic_vector(ODT_WIDTH-1 downto 0);
       ddr_cke           : out std_logic_vector(CKE_WIDTH-1 downto 0);
-      ddr_cs_l          : out std_logic_vector(CS_WIDTH-1 downto 0)
+      ddr_cs_l          : out std_logic_vector(CS_WIDTH-1 downto 0);
+      ddr_cs_l_cpy          : out std_logic_vector(CS_WIDTH-1 downto 0)
       );
   end  component;
 
@@ -222,6 +226,7 @@ begin
       ddr_cas_l         => ddr_cas_l,
       ddr_we_l          => ddr_we_l,
       ddr_cs_l          => ddr_cs_l,
+      ddr_cs_l_cpy          => ddr_cs_l_cpy,
       ddr_cke           => ddr_cke,
       ddr_odt           => ddr_odt,
       ddr_odt_cpy           => ddr_odt_cpy,
@@ -232,6 +237,7 @@ begin
       ctrl_ddr2_cas_l   => ctrl_ddr2_cas_l,
       ctrl_ddr2_we_l    => ctrl_ddr2_we_l,
       ctrl_ddr2_cs_l    => ctrl_ddr2_cs_l,
+      ctrl_ddr2_cs_l_cpy    => ctrl_ddr2_cs_l_cpy,
       ctrl_ddr2_cke     => ctrl_ddr2_cke,
       ctrl_ddr2_odt     => ctrl_ddr2_odt,
       ctrl_ddr2_odt_cpy     => ctrl_ddr2_odt_cpy
