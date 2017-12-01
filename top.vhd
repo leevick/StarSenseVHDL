@@ -57,6 +57,7 @@ component DDR2
       cntrl0_app_af_addr            : in    std_logic_vector(35 downto 0);
       cntrl0_read_data_fifo_out     : out   std_logic_vector(63 downto 0);
       cntrl0_app_wdf_data           : in    std_logic_vector(63 downto 0);
+      cntrl0_app_mask_data          : in    std_logic_vector(7 downto 0);
       clk_0                         : in    std_logic;
       clk_90                        : in    std_logic;
       clk_200                       : in    std_logic;
@@ -98,6 +99,17 @@ end component;
     signal cntrl0_app_af_addr            :std_logic_vector(35 downto 0);
     signal cntrl0_read_data_fifo_out     :std_logic_vector(63 downto 0);
     signal cntrl0_app_wdf_data           :std_logic_vector(63 downto 0);
+    signal cntrl0_app_mask_data          :std_logic_vector(7 downto 0);
+
+    type status is (reset,init,rd,wr);
+    signal state:status:=reset;
+    signal reset_count:integer:=0;
+
+    signal dbg_state:std_logic_vector(1 downto 0):="00";
+
+    attribute KEEP:string;
+    attribute KEEP of dbg_state:signal is "TRUE";
+    attribute KEEP of state:signal is "TRUE";
 
 begin
 
@@ -115,7 +127,7 @@ u_DDR2 :DDR2
       cntrl0_ddr2_odt_cpy               => cntrl0_ddr2_odt_cpy,
       cntrl0_ddr2_cke               => cntrl0_ddr2_cke,
       cntrl0_ddr2_dm                => cntrl0_ddr2_dm,
-      sys_reset_in_n                => sys_reset,
+      sys_reset_in_n                => not sys_reset,
       cntrl0_init_done              => cntrl0_init_done,
       cntrl0_clk_tb                 => cntrl0_clk_tb,
       cntrl0_reset_tb               => cntrl0_reset_tb,
@@ -123,7 +135,8 @@ u_DDR2 :DDR2
       cntrl0_af_almost_full         => cntrl0_af_almost_full,
       cntrl0_read_data_valid        => cntrl0_read_data_valid,
       cntrl0_app_wdf_wren           => cntrl0_app_wdf_wren,
-      clk_0                         => clk_50,
+      cntrl0_app_mask_data          => cntrl0_app_mask_data,
+      clk_0                         => clk_200,
       clk_90                        => clk_90,
       clk_200                       => clk_200,
       dcm_lock                      => dcm_lock,
@@ -141,7 +154,7 @@ u_DDR2 :DDR2
 	Inst_dcm2: dcm2
     PORT MAP(
 		CLKIN_IN => i1_clk_pin,
-		RST_IN => sys_reset,
+		RST_IN => '0',
 		CLKFX_OUT => clk_200,
 		CLKIN_IBUFG_OUT => open,
 		CLK0_OUT => clk_50,
@@ -150,10 +163,42 @@ u_DDR2 :DDR2
 	);
 
     main:process(clk_50) begin
-        if sys_reset='1' then
-
-        elsif rising_edge(clk_50) then
-
+        if rising_edge(clk_50) then
+            case (state) is
+                when reset =>
+                    dbg_state <= "00";
+                    if reset_count <500000 then
+                        cntrl0_app_wdf_data <= (others =>'0');
+                        cntrl0_app_mask_data <= (others =>'0');
+                        cntrl0_app_af_wren <='0';
+                        cntrl0_app_wdf_wren <='0';
+                        sys_reset <= '1';
+                        reset_count <= reset_count + 1;
+                    else
+                        sys_reset <= '0';
+                        reset_count <=0;
+                        state <= init;
+                    end if;
+                when init =>
+                    dbg_state <= "01";
+                    cntrl0_app_wdf_data <= (others =>'0');
+                    cntrl0_app_mask_data <= (others =>'0');
+                    cntrl0_app_af_wren <='0';
+                    cntrl0_app_wdf_wren <='0';
+                    if cntrl0_init_done='1' then
+                        state <= rd;
+                    else
+                        state <= init;
+                    end if;
+                when rd =>
+                    dbg_state <= "10";
+                    state <= wr;
+                when wr =>
+                    dbg_state <= "11";
+                    state <= reset;
+                when others =>
+                    state <= reset;
+            end case;
         end if;
     end process;
 
