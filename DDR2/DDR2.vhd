@@ -74,24 +74,11 @@ entity DDR2 is
       cntrl0_ddr2_odt_cpy               : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_cke               : out   std_logic_vector(0 downto 0);
       cntrl0_ddr2_dm                : out   std_logic_vector(3 downto 0);
+      sys_clk                       : in    std_logic;
+      idly_clk_200                  : in    std_logic;
       sys_reset_in_n                : in    std_logic;
       cntrl0_init_done              : out   std_logic;
-      cntrl0_clk_tb                 : out   std_logic;
-      cntrl0_reset_tb               : out   std_logic;
-      cntrl0_wdf_almost_full        : out   std_logic;
-      cntrl0_af_almost_full         : out   std_logic;
-      cntrl0_read_data_valid        : out   std_logic;
-      cntrl0_app_wdf_wren           : in    std_logic;
-      cntrl0_app_af_wren            : in    std_logic;
-      cntrl0_burst_length_div2      : out   std_logic_vector(2 downto 0);
-      cntrl0_app_af_addr            : in    std_logic_vector(35 downto 0);
-      cntrl0_read_data_fifo_out     : out   std_logic_vector(63 downto 0);
-      cntrl0_app_wdf_data           : in    std_logic_vector(63 downto 0);
-      cntrl0_app_mask_data          : in    std_logic_vector(7 downto 0);
-      clk_0                         : in    std_logic;
-      clk_90                        : in    std_logic;
-      clk_200                       : in    std_logic;
-      dcm_lock                      : in    std_logic;
+      cntrl0_error                  : out   std_logic;
       cntrl0_ddr2_dqs               : inout std_logic_vector(3 downto 0);
       cntrl0_ddr2_dqs_n             : inout std_logic_vector(3 downto 0);
       cntrl0_ddr2_ck                : out   std_logic_vector(1 downto 0);
@@ -106,7 +93,7 @@ end entity DDR2;
 
 architecture arc_mem_interface_top of DDR2 is
 
-component DDR2_top_0
+component DDR2_main_0
     port (
       ddr2_dq               : inout std_logic_vector(31 downto 0);
       ddr2_a                : out   std_logic_vector(13 downto 0);
@@ -121,25 +108,14 @@ component DDR2_top_0
       ddr2_cke              : out   std_logic_vector(0 downto 0);
       ddr2_dm               : out   std_logic_vector(3 downto 0);
       init_done             : out   std_logic;
-      clk_tb                : out   std_logic;
-      reset_tb              : out   std_logic;
-      wdf_almost_full       : out   std_logic;
-      af_almost_full        : out   std_logic;
-      read_data_valid       : out   std_logic;
-      app_wdf_wren          : in    std_logic;
-      app_af_wren           : in    std_logic;
-      burst_length_div2     : out   std_logic_vector(2 downto 0);
-      app_af_addr           : in    std_logic_vector(35 downto 0);
-      read_data_fifo_out    : out   std_logic_vector(63 downto 0);
-      app_wdf_data          : in    std_logic_vector(63 downto 0);
-      app_mask_data         : in    std_logic_vector(7 downto 0);
+      error                 : out   std_logic;
       ddr2_dqs              : inout std_logic_vector(3 downto 0);
       ddr2_dqs_n            : inout std_logic_vector(3 downto 0);
       ddr2_ck               : out   std_logic_vector(1 downto 0);
       ddr2_ck_n             : out   std_logic_vector(1 downto 0);
-      clk_0                 : in    std_logic;
-      clk_90                : in    std_logic;
-   
+      clk_0                 : in    std_logic;   
+      clk_90                : in    std_logic;  
+      
       sys_rst               : in    std_logic;   
       sys_rst90             : in    std_logic;   
       --Debug ports
@@ -162,12 +138,17 @@ end component;
 
   component DDR2_infrastructure
     port (
+      sys_clk_p             : in    std_logic;
+      sys_clk_n             : in    std_logic;
+      clk200_p              : in    std_logic;
+      clk200_n              : in    std_logic;
+      sys_clk               : in    std_logic;
+      idly_clk_200          : in    std_logic;
       sys_reset_in_n        : in    std_logic;
-      clk_0                 : in    std_logic;
-      clk_90                : in    std_logic;
-      clk_200               : in    std_logic;
-      dcm_lock              : in    std_logic;
       idelay_ctrl_rdy       : in    std_logic;
+      clk_0                 : out   std_logic;
+      clk_90                : out   std_logic;
+      clk_200               : out   std_logic;
       sys_rst               : out   std_logic;
       sys_rst90             : out   std_logic;
       sys_rst200            : out   std_logic
@@ -188,6 +169,14 @@ end component;
   signal sys_rst          : std_logic;
   signal sys_rst90        : std_logic;
   signal sys_rst200       : std_logic;
+
+  signal clk_0            : std_logic;
+  signal clk_90           : std_logic;
+  signal clk_200          : std_logic;
+  signal sys_clk_p : std_logic;
+  signal sys_clk_n : std_logic;
+  signal clk200_p : std_logic;
+  signal clk200_n : std_logic;
 
   signal dbg_idel_up_all              : std_logic;
   signal dbg_idel_down_all            : std_logic;
@@ -221,7 +210,12 @@ begin
 
   --***************************************************************************
 
-top_00 :    DDR2_top_0
+  sys_clk_p <= '1';
+  sys_clk_n <= '0';
+  clk200_p <= '1';
+  clk200_n <= '0';
+
+main_00 :    DDR2_main_0
     port map (
       ddr2_dq               => cntrl0_ddr2_dq,
       ddr2_a                => cntrl0_ddr2_a,
@@ -236,25 +230,15 @@ top_00 :    DDR2_top_0
       ddr2_cke              => cntrl0_ddr2_cke,
       ddr2_dm               => cntrl0_ddr2_dm,
       init_done             => cntrl0_init_done,
-      clk_tb                => cntrl0_clk_tb,
-      reset_tb              => cntrl0_reset_tb,
-      wdf_almost_full       => cntrl0_wdf_almost_full,
-      af_almost_full        => cntrl0_af_almost_full,
-      read_data_valid       => cntrl0_read_data_valid,
-      app_wdf_wren          => cntrl0_app_wdf_wren,
-      app_af_wren           => cntrl0_app_af_wren,
-      burst_length_div2     => cntrl0_burst_length_div2,
-      app_af_addr           => cntrl0_app_af_addr,
-      read_data_fifo_out    => cntrl0_read_data_fifo_out,
-      app_wdf_data          => cntrl0_app_wdf_data,
-      app_mask_data         => cntrl0_app_mask_data,
+      error                 => cntrl0_error,
       ddr2_dqs              => cntrl0_ddr2_dqs,
       ddr2_dqs_n            => cntrl0_ddr2_dqs_n,
       ddr2_ck               => cntrl0_ddr2_ck,
       ddr2_ck_n             => cntrl0_ddr2_ck_n,
+      --infrastructure signals,
       clk_0                 => clk_0,
       clk_90                => clk_90,
-   
+
       sys_rst               => sys_rst,
       sys_rst90             => sys_rst90,
 
@@ -276,12 +260,17 @@ top_00 :    DDR2_top_0
 
   infrastructure0 :  DDR2_infrastructure
     port map (
+      sys_clk_p             => sys_clk_p,
+      sys_clk_n             => sys_clk_n,
+      clk200_p              => clk200_p,
+      clk200_n              => clk200_n,
+      sys_clk               => sys_clk,
+      idly_clk_200          => idly_clk_200,
       sys_reset_in_n        => sys_reset_in_n,
+      idelay_ctrl_rdy       => idelay_ctrl_rdy,
       clk_0                 => clk_0,
       clk_90                => clk_90,
       clk_200               => clk_200,
-      dcm_lock              => dcm_lock,
-      idelay_ctrl_rdy       => idelay_ctrl_rdy,
       sys_rst               => sys_rst,
       sys_rst90             => sys_rst90,
       sys_rst200            => sys_rst200

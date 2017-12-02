@@ -70,10 +70,16 @@ entity DDR2_infrastructure is
   port (
     sys_reset_in_n      : in std_logic;
     idelay_ctrl_rdy     : in std_logic;
-     clk_0               : in std_logic;
-    clk_90              : in std_logic;
-    clk_200             : in std_logic;
-    dcm_lock            : in std_logic;
+    sys_clk_p           : in std_logic;
+    sys_clk_n           : in std_logic;
+    sys_clk             : in std_logic;
+    clk200_p            : in std_logic;
+    clk200_n            : in std_logic;
+    idly_clk_200        : in std_logic;
+
+    clk_0               : out std_logic;
+    clk_90              : out std_logic;
+    clk_200             : out std_logic; 
     sys_rst             : out std_logic;
     sys_rst90           : out std_logic;
     sys_rst200          : out std_logic
@@ -93,6 +99,15 @@ architecture arc_infrastructure of DDR2_infrastructure is
   constant RST_SYNC_NUM        : integer := 25;
 
 
+  signal clk0_bufg_in          : std_logic;
+  signal clk90_bufg_in         : std_logic;
+  signal clk0_bufg_out         : std_logic;
+  signal clk90_bufg_out        : std_logic;
+  signal clk200_bufg_out       : std_logic;
+
+  signal dcm_lock              : std_logic;
+  signal ref_clk200_in         : std_logic;
+  signal sys_clk_in            : std_logic;
 
   signal rst0_sync_r           : std_logic_vector((RST_SYNC_NUM -1) downto 0);
   signal rst200_sync_r         : std_logic_vector((RST_SYNC_NUM -1) downto 0);
@@ -109,6 +124,86 @@ begin
                else sys_reset_in_n;
 
 
+  clk_0             <= clk0_bufg_out;
+  clk_90            <= clk90_bufg_out;
+  clk_200           <= clk200_bufg_out;
+
+  DIFF_ENDED_CLKS_INST : if(CLK_TYPE = "DIFFERENTIAL") generate
+  begin
+    SYS_CLK_INST : IBUFGDS_LVPECL_25
+      port map (
+        I  => sys_clk_p,
+        IB => sys_clk_n,
+        O  => sys_clk_in
+        );
+
+    IDLY_CLK_INST : IBUFGDS_LVPECL_25
+      port map (
+        O  => ref_clk200_in,
+        I  => clk200_p,
+        IB => clk200_n
+        );
+
+  end generate;
+
+  SINGLE_ENDED_CLKS_INST : if(CLK_TYPE = "SINGLE_ENDED") generate
+  begin
+    SYS_CLK_INST : IBUFG
+      port map (
+        I  => sys_clk,
+        O  => sys_clk_in
+        );
+
+    IDLY_CLK_INST : IBUFG
+      port map (
+        I  => idly_clk_200,
+        O  => ref_clk200_in
+        );
+
+  end generate;
+
+  CLK_200_BUFG : BUFG
+    port map (
+      O => clk200_bufg_out,
+      I => ref_clk200_in
+      );
+
+  DCM_BASE0 : DCM_BASE
+    generic map(
+      DLL_FREQUENCY_MODE    => "HIGH",
+      DUTY_CYCLE_CORRECTION => TRUE,
+      CLKDV_DIVIDE          => 16.0,
+      CLKFX_MULTIPLY        => 2,
+      CLKFX_DIVIDE          => 8,
+      FACTORY_JF            => X"F0F0"
+      )
+    port map (
+      CLK0     => clk0_bufg_in,
+      CLK180   => open,
+      CLK270   => open,
+      CLK2X    => open,
+      CLK2X180 => open,
+      CLK90    => clk90_bufg_in,
+      CLKDV    => open,
+      CLKFX    => open,
+      CLKFX180 => open,
+      LOCKED   => dcm_lock,
+      CLKFB    => clk0_bufg_out,
+      CLKIN    => sys_clk_in,
+      RST      => sys_reset
+      );
+
+  DCM_CLK0 : BUFG
+    port map (
+      O => clk0_bufg_out,
+      I => clk0_bufg_in
+      );
+
+  DCM_CLK90 : BUFG
+    port map (
+      O => clk90_bufg_out,
+      I => clk90_bufg_in
+      );
 
   --***************************************************************************
   -- Reset synchronization
@@ -125,31 +220,31 @@ begin
 
   rst_tmp  <= (not dcm_lock) or (not idelay_ctrl_rdy) or (sys_reset);
 
-  process(clk_0, rst_tmp)
+  process(clk0_bufg_out, rst_tmp)
   begin
     if (rst_tmp = '1') then
       rst0_sync_r <= ADD_CONST5(RST_SYNC_NUM-1 downto 0);
-    elsif (clk_0'event and clk_0 = '1') then
+    elsif (clk0_bufg_out'event and clk0_bufg_out = '1') then
       rst0_sync_r(RST_SYNC_NUM-1 downto 1) <= rst0_sync_r(RST_SYNC_NUM-2 downto 0);
       rst0_sync_r(0) <= '0';
     end if;
   end process;
 
-  process(clk_90, rst_tmp)
+  process(clk90_bufg_out, rst_tmp)
   begin
     if (rst_tmp = '1') then
       rst90_sync_r <= ADD_CONST5(RST_SYNC_NUM-1 downto 0);
-    elsif (clk_90'event and clk_90 = '1') then
+    elsif (clk90_bufg_out'event and clk90_bufg_out = '1') then
       rst90_sync_r(RST_SYNC_NUM-1 downto 1) <= rst90_sync_r(RST_SYNC_NUM-2 downto 0);
       rst90_sync_r(0) <= '0';
     end if;
   end process;
 
-  process(clk_200, dcm_lock)
+  process(clk200_bufg_out, dcm_lock)
   begin
     if (dcm_lock = '0') then
       rst200_sync_r <= ADD_CONST5(RST_SYNC_NUM-1 downto 0);
-    elsif (clk_200'event and clk_200 = '1') then
+    elsif (clk200_bufg_out'event and clk200_bufg_out = '1') then
       rst200_sync_r(RST_SYNC_NUM-1 downto 1) <= rst200_sync_r(RST_SYNC_NUM-2 downto 0);
       rst200_sync_r(0) <= '0';
     end if;

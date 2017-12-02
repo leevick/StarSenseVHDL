@@ -97,6 +97,7 @@ constant   USE_DM_PORT                               : INTEGER   :=  1;
 constant   COLUMN_ADDRESS                            : INTEGER   :=  10;
 constant   BANK_ADDRESS                              : INTEGER   :=  3;
 constant   DEBUG_EN                                  : INTEGER   :=  0;
+constant   CLK_TYPE                                  : string    :=  "SINGLE_ENDED";
 constant   DQ_BITS                                   : INTEGER   :=  5;
 constant   LOAD_MODE_REGISTER                        : std_logic_vector(13 downto 0) := "00010000110010";
 

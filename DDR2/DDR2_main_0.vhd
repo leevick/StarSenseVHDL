@@ -74,8 +74,10 @@ entity DDR2_main_0 is
     ddr2_cas_n      : out std_logic;
     ddr2_we_n       : out std_logic;
     ddr2_odt        : out std_logic_vector(ODT_WIDTH-1 downto 0);
+    ddr2_odt_cpy        : out std_logic_vector(ODT_WIDTH-1 downto 0);
     ddr2_cke        : out std_logic_vector(CKE_WIDTH-1 downto 0);
     ddr2_cs_n       : out std_logic_vector(CS_WIDTH-1 downto 0);
+    ddr2_cs_n_cpy       : out std_logic_vector(CS_WIDTH-1 downto 0);
     ddr2_dq         : inout std_logic_vector(DATA_WIDTH-1 downto 0);
     ddr2_dqs        : inout std_logic_vector(DATA_STROBE_WIDTH-1 downto 0);
     ddr2_dqs_n      : inout std_logic_vector(DATA_STROBE_WIDTH-1 downto 0);
@@ -119,8 +121,10 @@ architecture arc_main of DDR2_main_0 is
       ddr2_cas_n         : out std_logic;
       ddr2_we_n          : out std_logic;
       ddr2_odt           : out std_logic_vector(ODT_WIDTH-1 downto 0);
+      ddr2_odt_cpy           : out std_logic_vector(ODT_WIDTH-1 downto 0);
       ddr2_cke           : out std_logic_vector(CKE_WIDTH-1 downto 0);
       ddr2_cs_n          : out std_logic_vector(CS_WIDTH-1 downto 0);
+      ddr2_cs_n_cpy          : out std_logic_vector(CS_WIDTH-1 downto 0);
       ddr2_dq            : inout std_logic_vector(DATA_WIDTH-1 downto 0);
       ddr2_dqs           : inout std_logic_vector(DATA_STROBE_WIDTH-1 downto 0);
       ddr2_dqs_n         : inout std_logic_vector(DATA_STROBE_WIDTH-1 downto 0);
@@ -214,8 +218,10 @@ begin
       ddr2_cas_n         => ddr2_cas_n,
       ddr2_we_n          => ddr2_we_n,
       ddr2_odt           => ddr2_odt,
+      ddr2_odt_cpy           => ddr2_odt_cpy,
       ddr2_cke           => ddr2_cke,
       ddr2_cs_n          => ddr2_cs_n,
+      ddr2_cs_n_cpy          => ddr2_cs_n_cpy,
       ddr2_dq            => ddr2_dq,
       ddr2_dqs           => ddr2_dqs,
       ddr2_dqs_n         => ddr2_dqs_n,
