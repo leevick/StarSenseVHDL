@@ -20,6 +20,9 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
+library UNISIM;
+use UNISIM.VCOMPONENTS.ALL;
+
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
 --use IEEE.NUMERIC_STD.ALL;
@@ -79,11 +82,12 @@ architecture Behavioral of top_test is
         );
     end component;
 
-    component dcm2
+    component dcm
     port(
         CLKIN_IN : IN std_logic;
         RST_IN : IN std_logic;          
         CLKFX_OUT : OUT std_logic;
+        CLKFX180_OUT : OUT std_logic;
         CLKIN_IBUFG_OUT : OUT std_logic;
         CLK0_OUT : OUT std_logic;
         CLK90_OUT : OUT std_logic;
@@ -91,60 +95,64 @@ architecture Behavioral of top_test is
     );
     end component;
 
-begin
-
-    ddr2_0:DDR2
-    port map(
-        cntrl0_ddr2_dq          =>  cntrl0_ddr2_dq            
-        cntrl0_ddr2_a           =>  cntrl0_ddr2_a             
-        cntrl0_ddr2_ba          =>  cntrl0_ddr2_ba            
-        cntrl0_ddr2_ras_n       =>  cntrl0_ddr2_ras_n         
-        cntrl0_ddr2_cas_n       =>  cntrl0_ddr2_cas_n         
-        cntrl0_ddr2_we_n        =>  cntrl0_ddr2_we_n          
-        cntrl0_ddr2_cs_n        =>  cntrl0_ddr2_cs_n          
-        cntrl0_ddr2_cs_n_cpy    =>  cntrl0_ddr2_cs_n_cpy          
-        cntrl0_ddr2_odt         =>  cntrl0_ddr2_odt           
-        cntrl0_ddr2_odt_cpy     =>  cntrl0_ddr2_odt_cpy           
-        cntrl0_ddr2_cke         =>  cntrl0_ddr2_cke           
-        cntrl0_ddr2_dm          =>  cntrl0_ddr2_dm            
-        sys_clk                 =>  sys_clk                   
-        idly_clk_200            =>  idly_clk_200              
-        sys_reset_in_n          =>  sys_reset_in_n            
-        cntrl0_init_done        =>  cntrl0_init_done          
-        cntrl0_error            =>  cntrl0_error              
-        cntrl0_ddr2_dqs         =>  cntrl0_ddr2_dqs           
-        cntrl0_ddr2_dqs_n       =>  cntrl0_ddr2_dqs_n         
-        cntrl0_ddr2_ck          =>  cntrl0_ddr2_ck            
-        cntrl0_ddr2_ck_n        =>  cntrl0_ddr2_ck_n          
-    );
-
-    Inst_dcm2: dcm2 port map(
-		CLKIN_IN => i1_clk_pin,
-		RST_IN => '0',
-		CLKFX_OUT => sys_clk,
-		CLKIN_IBUFG_OUT => open,
-		CLK0_OUT => open,
-		CLK90_OUT => open,
-		LOCKED_OUT => 
-	);
-
-    Inst_dcm2_2: dcm2 port map(
-		CLKIN_IN => sys_clk,
-		RST_IN => '0',
-		CLKFX_OUT => open,  
-		CLKIN_IBUFG_OUT => open,
-		CLK0_OUT => open,
-		CLK90_OUT => idly_clk_200,
-		LOCKED_OUT => open
-	);
-
     signal dcm_locked           :std_logic;
     signal sys_clk              :std_logic;
+    signal idly_clk_200         :std_logic;
     signal sys_reset            :std_logic:='1';
     signal cntrl0_init_done     :std_logic;
     signal cntrl0_error         :std_logic;
 
+    signal reset_cnt            :integer:=0;
 
+begin
+
+    ddr2_0:DDR2
+    port map(
+        cntrl0_ddr2_dq          =>  cntrl0_ddr2_dq      ,      
+        cntrl0_ddr2_a           =>  cntrl0_ddr2_a       ,      
+        cntrl0_ddr2_ba          =>  cntrl0_ddr2_ba      ,      
+        cntrl0_ddr2_ras_n       =>  cntrl0_ddr2_ras_n   ,      
+        cntrl0_ddr2_cas_n       =>  cntrl0_ddr2_cas_n   ,      
+        cntrl0_ddr2_we_n        =>  cntrl0_ddr2_we_n    ,      
+        cntrl0_ddr2_cs_n        =>  cntrl0_ddr2_cs_n    ,      
+        cntrl0_ddr2_cs_n_cpy    =>  cntrl0_ddr2_cs_n_cpy,          
+        cntrl0_ddr2_odt         =>  cntrl0_ddr2_odt     ,      
+        cntrl0_ddr2_odt_cpy     =>  cntrl0_ddr2_odt_cpy ,          
+        cntrl0_ddr2_cke         =>  cntrl0_ddr2_cke     ,      
+        cntrl0_ddr2_dm          =>  cntrl0_ddr2_dm      ,      
+        sys_clk                 =>  sys_clk             ,      
+        idly_clk_200            =>  idly_clk_200        ,      
+        sys_reset_in_n          =>  not sys_reset      ,      
+        cntrl0_init_done        =>  cntrl0_init_done    ,      
+        cntrl0_error            =>  cntrl0_error        ,      
+        cntrl0_ddr2_dqs         =>  cntrl0_ddr2_dqs     ,      
+        cntrl0_ddr2_dqs_n       =>  cntrl0_ddr2_dqs_n   ,      
+        cntrl0_ddr2_ck          =>  cntrl0_ddr2_ck      ,      
+        cntrl0_ddr2_ck_n        =>  cntrl0_ddr2_ck_n      
+    );
+
+    Inst_dcm2: dcm port map(
+		CLKIN_IN => i1_clk_pin,
+		RST_IN => '0',
+		CLKFX_OUT => sys_clk,
+		CLKFX180_OUT => idly_clk_200,
+		CLKIN_IBUFG_OUT => open,
+		CLK0_OUT => open,
+		CLK90_OUT => open,
+		LOCKED_OUT => open
+	);
+
+    main:process(sys_clk)
+    begin
+        if rising_edge(sys_clk) then
+            if reset_cnt<50000 then
+                sys_reset <='1';
+                reset_cnt <= reset_cnt + 1;
+            else
+                sys_reset <='0';
+            end if;
+        end if; 
+    end process;
 
 end Behavioral;
 
