@@ -104,6 +104,11 @@ architecture Behavioral of top_test is
 
     signal reset_cnt            :integer:=0;
 
+    attribute KEEP:string;
+    attribute KEEP of cntrl0_init_done: signal is "TRUE";
+    attribute KEEP of cntrl0_ddr2_dq: signal is "TRUE";
+    attribute KEEP of cntrl0_ddr2_a: signal is "TRUE";
+
 begin
 
     ddr2_0:DDR2
