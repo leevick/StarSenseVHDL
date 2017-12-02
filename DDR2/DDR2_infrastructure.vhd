@@ -123,10 +123,11 @@ begin
   sys_reset <= (not sys_reset_in_n) when (RESET_ACTIVE_LOW = '1')
                else sys_reset_in_n;
 
-
+  sys_clk_in        <= sys_clk;
   clk_0             <= clk0_bufg_out;
   clk_90            <= clk90_bufg_out;
   clk_200           <= clk200_bufg_out;
+  ref_clk200_in     <= idly_clk_200;
 
   DIFF_ENDED_CLKS_INST : if(CLK_TYPE = "DIFFERENTIAL") generate
   begin
@@ -146,21 +147,21 @@ begin
 
   end generate;
 
-  SINGLE_ENDED_CLKS_INST : if(CLK_TYPE = "SINGLE_ENDED") generate
-  begin
-    SYS_CLK_INST : IBUFG
-      port map (
-        I  => sys_clk,
-        O  => sys_clk_in
-        );
+  -- SINGLE_ENDED_CLKS_INST : if(CLK_TYPE = "SINGLE_ENDED") generate
+  -- begin
+  --   SYS_CLK_INST : IBUFG
+  --     port map (
+  --       I  => sys_clk,
+  --       O  => sys_clk_in
+  --       );
 
-    IDLY_CLK_INST : IBUFG
-      port map (
-        I  => idly_clk_200,
-        O  => ref_clk200_in
-        );
+  --   IDLY_CLK_INST : IBUFG
+  --     port map (
+  --       I  => idly_clk_200,
+  --       O  => ref_clk200_in
+  --       );
 
-  end generate;
+  -- end generate;
 
   CLK_200_BUFG : BUFG
     port map (
